@@ -26,5 +26,9 @@ func (p PQError) ErrorWithoutStack() string {
 }
 
 func NewError(err error) error {
+	if _, ok := err.(PQError); ok {
+		return err
+	}
+
 	return PQError{errors.Wrap(err, err.Error())}
 }
