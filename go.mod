@@ -1,4 +1,4 @@
-module pq-error
+module github.com/hyhilman/pq-error
 
 go 1.14
 

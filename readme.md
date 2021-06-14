@@ -1,6 +1,6 @@
 # PQ Error
 
-Simple error show stack on print
+Simple error show stack on print in golang
 
 ## Usage
 
