@@ -111,3 +111,28 @@ func TestErrorStackInsideErrorStack(t *testing.T) {
 	printRightErrorMessage(t, err2, msg)
 	testStack(t, err, 102)
 }
+
+type custErr struct {
+	msg string
+}
+
+func (e *custErr) Error() string {
+	return e.msg
+}
+
+func TestInvalidCreation(t *testing.T) {
+	msg := "invalid creation handler"
+
+	err := PQError{
+		e: &custErr{msg: msg},
+	}
+
+	if strings.Contains(fmt.Sprintf("%s", err), t.Name()) {
+		t.Errorf("\033[1;31mfailed: have %s error method\u001B[0m", t.Name())
+	} else {
+		t.Logf("\u001B[1;34msuccess: dosn't have %s error method name\033[0m", t.Name())
+	}
+
+	printRightErrorMessage(t, err, msg)
+	testNoStack(t, err, 126)
+}
