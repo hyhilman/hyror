@@ -1,4 +1,4 @@
-package pq_error
+package hyror
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 type ErrorWithStackTrace interface {
 	StackTrace() errors.StackTrace
+	Error() string
 }
 
 type PQError struct {
@@ -25,10 +26,18 @@ func (p PQError) ErrorWithoutStack() string {
 	return errors.Cause(p.e).Error()
 }
 
-func NewError(err error) error {
-	if _, ok := err.(PQError); ok {
+func NewError(e interface{}) error {
+	if msg, ok := e.(string); ok {
+		return PQError{e: errors.New(msg)}
+	}
+
+	if err, ok := e.(PQError); ok {
 		return err
 	}
 
-	return PQError{errors.Wrap(err, err.Error())}
+	if err, ok := e.(ErrorWithStackTrace); ok {
+		return PQError{e: err}
+	}
+
+	return PQError{errors.New(fmt.Sprintf("%+v", e))}
 }

@@ -1,4 +1,4 @@
-package pq_error
+package hyror
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ func testNoStack(t *testing.T, err error, line int) {
 	if !strings.Contains(fmt.Sprintf("%s", err), testString) {
 		t.Logf("\033[1;34msuccess: have right error stacks\033[0m")
 	} else {
-		t.Errorf("\033[1;31mfailed: should have %s but shown %s\033[0m", testString, err)
+		t.Errorf("\033[1;31mfailed: should have not %s but shown \n%s\033[0m", testString, err)
 	}
 }
 
@@ -48,7 +48,7 @@ func TestSimpleError(t *testing.T) {
 	}
 
 	printRightErrorMessage(t, err, msg)
-	testStack(t, err, 42)
+	testStack(t, err, 41)
 }
 
 func TestNoErrorStackNotThrowingPanic(t *testing.T) {
@@ -67,7 +67,7 @@ func TestNoErrorStackHaveStackWhenCreatedProperly(t *testing.T) {
 	testStack(t, stackError, 63)
 }
 
-func TestGoRoutineError(t *testing.T) {
+func TestNewError_GoRoutineError(t *testing.T) {
 	var err error
 	errChan := make(chan error)
 
@@ -82,7 +82,7 @@ func TestGoRoutineError(t *testing.T) {
 	testStack(t, err, 75)
 }
 
-func TestStackPrintWithoutStack(t *testing.T) {
+func TestNewError_StackPrintWithoutStack(t *testing.T) {
 	msg := "with stack"
 	simpleError := errors.New(msg)
 	err := NewError(simpleError)
@@ -96,7 +96,7 @@ func TestStackPrintWithoutStack(t *testing.T) {
 	printRightErrorMessage(t, err, msg)
 }
 
-func TestErrorStackInsideErrorStack(t *testing.T) {
+func TestNewError_ErrorStackInsideErrorStack(t *testing.T) {
 	msg := "with stack"
 	simpleError := errors.New(msg)
 	err := NewError(simpleError)
@@ -109,7 +109,7 @@ func TestErrorStackInsideErrorStack(t *testing.T) {
 	}
 
 	printRightErrorMessage(t, err2, msg)
-	testStack(t, err, 102)
+	testStack(t, err, 101)
 }
 
 type custErr struct {
@@ -120,7 +120,7 @@ func (e *custErr) Error() string {
 	return e.msg
 }
 
-func TestInvalidCreation(t *testing.T) {
+func TestNewError_InvalidCreation(t *testing.T) {
 	msg := "invalid creation handler"
 
 	err := PQError{
@@ -135,4 +135,18 @@ func TestInvalidCreation(t *testing.T) {
 
 	printRightErrorMessage(t, err, msg)
 	testNoStack(t, err, 126)
+}
+
+func TestNewError_StringParams(t *testing.T) {
+	msg := "string error message"
+	err := NewError(msg)
+
+	if strings.Contains(fmt.Sprintf("%s", err), t.Name()) {
+		t.Logf("\u001B[1;34msuccess: have %s error method name\033[0m", t.Name())
+	} else {
+		t.Errorf("\033[1;31mfailed: doesn't have %s error method\u001B[0m", t.Name())
+	}
+
+	printRightErrorMessage(t, err, msg)
+	testStack(t, err, 142)
 }
